@@ -165,6 +165,13 @@
     [_timer invalidate];
 }
 
+- (void)setContentInset:(UIEdgeInsets)contentInset {
+    if (!UIEdgeInsetsEqualToEdgeInsets(contentInset, _contentInset)) {
+        _contentInset = contentInset;
+        _scrollView.contentInset = contentInset;
+    }
+}
+
 - (void)setDataSource:(id<SwipeViewDataSource>)dataSource
 {
     if (_dataSource != dataSource)
