@@ -773,6 +773,7 @@
 
 - (void)setCurrentItemIndex:(NSInteger)currentItemIndex
 {
+    _previousItemIndex = _currentItemIndex;
     _currentItemIndex = currentItemIndex;
     self.scrollOffset = currentItemIndex;
 }
@@ -1155,6 +1156,7 @@
     
     //force refresh
     _lastUpdateOffset = self.scrollOffset - 1.0f;
+    _previousItemIndex = _currentItemIndex;
     [self didScroll];
 }
 
