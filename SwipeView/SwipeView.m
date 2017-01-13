@@ -48,7 +48,6 @@
 #error This class requires automatic reference counting
 #endif
 
-
 @implementation NSObject (SwipeView)
 
 - (CGSize)swipeViewItemSize:(__unused SwipeView *)swipeView { return CGSizeZero; }
@@ -64,10 +63,27 @@
 
 @end
 
+@interface SwipeScrollView : UIScrollView
+@property (nonatomic, getter=isVertical) BOOL vertical;
+@end
+
+@implementation SwipeScrollView
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRequireFailureOfGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+        if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+            CGPoint velocity = [((UIPanGestureRecognizer *) gestureRecognizer) velocityInView:self];
+            return _vertical ? ABS(velocity.y) < ABS(velocity.x) : ABS(velocity.x) > ABS(velocity.y);
+        }
+    return NO;
+}
+
+@end
+
 
 @interface SwipeView () <UIScrollViewDelegate, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, strong) SwipeScrollView *castedScrollView;
 @property (nonatomic, strong) NSMutableDictionary *itemViews;
 @property (nonatomic, strong) NSMutableSet *itemViewPool;
 @property (nonatomic, assign) NSInteger previousItemIndex;
@@ -84,7 +100,6 @@
 @property (nonatomic, strong) NSTimer *timer;
 
 @end
-
 
 @implementation SwipeView
 
@@ -103,7 +118,7 @@
     _defersItemViewLoading = NO;
     _vertical = NO;
     
-    _scrollView = [[UIScrollView alloc] init];
+    _scrollView = [[SwipeScrollView alloc] init];
     _scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _scrollView.autoresizesSubviews = YES;
     _scrollView.delegate = self;
@@ -287,6 +302,7 @@
         _vertical = vertical;
         _scrollView.alwaysBounceHorizontal = !_vertical && _bounces;
         _scrollView.alwaysBounceVertical = _vertical && _bounces;
+        self.castedScrollView.vertical = _vertical;
         [self setNeedsLayout];
     }
 }
@@ -821,6 +837,11 @@
     {
         self.scrollOffset += offset;
     }
+}
+
+- (SwipeScrollView *)castedScrollView
+{
+    return (SwipeScrollView *) _scrollView;
 }
 
 - (void)scrollToOffset:(CGFloat)offset duration:(NSTimeInterval)duration
