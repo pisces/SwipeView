@@ -86,7 +86,7 @@
 @property (nonatomic, strong) SwipeScrollView *castedScrollView;
 @property (nonatomic, strong) NSMutableDictionary *itemViews;
 @property (nonatomic, strong) NSMutableSet *itemViewPool;
-@property (nonatomic, assign) NSInteger previousItemIndex;
+@property (nonatomic, assign) NSInteger selectedItemIndex;
 @property (nonatomic, assign) CGPoint previousContentOffset;
 @property (nonatomic, assign) CGSize itemSize;
 @property (nonatomic, assign) BOOL suppressScrollEvent;
@@ -136,7 +136,7 @@
     
     _decelerationRate = _scrollView.decelerationRate;
     _itemViews = [[NSMutableDictionary alloc] init];
-    _previousItemIndex = 0;
+    _selectedItemIndex = 0;
     _previousContentOffset = _scrollView.contentOffset;
     _scrollOffset = 0.0f;
     _currentItemIndex = 0;
@@ -631,7 +631,6 @@
     
     if (!_defersItemViewLoading || fabsf([self minScrollDistanceFromOffset:_lastUpdateOffset toOffset:_scrollOffset]) >= 1.0f)
     {
-        //update item index
         _currentItemIndex = [self clampedIndex:roundf(_scrollOffset)];
         
         //load views
@@ -789,8 +788,8 @@
 
 - (void)setCurrentItemIndex:(NSInteger)currentItemIndex
 {
-    _previousItemIndex = _currentItemIndex;
     _currentItemIndex = currentItemIndex;
+    _selectedItemIndex = currentItemIndex;
     self.scrollOffset = currentItemIndex;
 }
 
@@ -870,7 +869,7 @@
     }
     else
     {
-        self.scrollOffset = [self clampedIndex:_previousItemIndex + itemCount];
+        self.scrollOffset = [self clampedIndex:_currentItemIndex + itemCount];
     }
 }
 
@@ -1177,7 +1176,6 @@
     
     //force refresh
     _lastUpdateOffset = self.scrollOffset - 1.0f;
-    _previousItemIndex = _currentItemIndex;
     [self didScroll];
 }
 
@@ -1213,9 +1211,12 @@
     [_delegate swipeViewDidEndDecelerating:self];
     
     //send index update event
-    if (_previousItemIndex != _currentItemIndex)
-    {
-        _previousItemIndex = _currentItemIndex;
+    
+    NSInteger index = [self clampedIndex:roundf(_scrollOffset)];
+    
+    if (index != _selectedItemIndex) {
+        _selectedItemIndex = index;
+        
         [_delegate swipeViewCurrentItemIndexDidChange:self];
     }
 }
