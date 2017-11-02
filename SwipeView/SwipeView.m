@@ -678,6 +678,7 @@
     else
     {
         [self stopAnimation];
+        [self changeSelectedIndex];
     }
 }
 
@@ -1186,6 +1187,7 @@
         //force refresh
         _lastUpdateOffset = self.scrollOffset - 1.0f;
         [self didScroll];
+        [self changeSelectedIndex];
     }
     [_delegate swipeViewDidEndDragging:self willDecelerate:decelerate];
 }
@@ -1209,9 +1211,10 @@
     [self didScroll];
     
     [_delegate swipeViewDidEndDecelerating:self];
-    
-    //send index update event
-    
+    [self changeSelectedIndex];
+}
+
+- (void)changeSelectedIndex {
     NSInteger index = [self clampedIndex:roundf(_scrollOffset)];
     
     if (index != _selectedItemIndex) {
