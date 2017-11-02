@@ -836,6 +836,7 @@
     else
     {
         self.scrollOffset += offset;
+        [self changeSelectedIndex];
     }
 }
 
